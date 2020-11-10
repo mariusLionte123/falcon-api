@@ -1,0 +1,93 @@
+openapi: 3.0.0
+info:
+  title: Test API
+  version: "1.0"
+paths:
+  /token:
+    post:
+      summary: Submit user credentials and return a valid JWT
+      responses:
+        "401":
+          description: Auth credentials not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/UnauthorizedPayload"
+        "200":
+          description: "Success response"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/TokenPayload"
+        "501":
+          description: "Method not implemented"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/NotImplementedPayload"
+  /user:
+    get:
+      summary: User
+      responses:
+        "401":
+          description: Auth credentials not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/UnauthorizedPayload"
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/UserPayload"
+        "501":
+          description: "Method not implemented"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/NotImplementedPayload"
+components:
+  schemas:
+    TokenPayload:
+      title: TokenPayload
+      properties:
+        token:
+          type: string
+    NotImplementedPayload:
+      title: InvalidRequestPayload
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+    UnauthorizedPayload:
+      title: UnauthorizedPayload
+      properties:
+        title:
+          type: string
+    UserPayload:
+      title: UserPayload
+      properties:
+        profile_picture:
+          type: string
+        username:
+          type: string
