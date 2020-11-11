@@ -4,7 +4,7 @@ info:
   version: "1.0"
 paths:
   /token:
-    post:
+    get:
       summary: Submit user credentials and return a valid JWT
       responses:
         "401":
@@ -65,8 +65,65 @@ paths:
                 properties:
                   response:
                     $ref: "#/components/schemas/NotImplementedPayload"
+    post:
+      summary: Create a new user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request:
+                  $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: Success response for creating a new user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/CreateUserPayload"
+        "409":
+          description: Username must be unique
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/OperationFailed"
+        "401":
+          description: Username or password were not provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    $ref: "#/components/schemas/OperationFailed"
 components:
   schemas:
+    CreateUserInput:
+      title: CreateUserInput
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    OperationFailed:
+      title: OperationFailed
+      properties:
+        error:
+          type: boolean
+        message:
+          type: string
+    CreateUserPayload:
+      title: CreateUserPayload
+      properties:
+        success:
+          type: boolean
     TokenPayload:
       title: TokenPayload
       properties:

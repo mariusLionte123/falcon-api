@@ -3,7 +3,7 @@ import base64
 from jwt import encode, decode, exceptions
 from datetime import datetime, timedelta
 from falcon.uri import parse_query_string
-from falcon import Request, Response, API, HTTP_200, HTTP_204, HTTP_400, HTTP_403, HTTP_401, HTTPNotImplemented, HTTPUnauthorized
+from falcon import Request, Response, API, HTTP_200, HTTP_201, HTTP_204, HTTP_400, HTTP_401, HTTP_409, HTTPNotImplemented, HTTPUnauthorized
 
 SECRET = "secret"
 users = [{"username":'marius', "password":'marius', "profile_picture": "xxx"}]
@@ -32,7 +32,7 @@ class Auth:
         decoded_token = token.decode('UTF-8')
         return decoded_token
 
-    def on_post(self, req: Request, res: Response):
+    def on_get(self, req: Request, res: Response):
         if req.auth is None:
             raise HTTPNotImplemented('Not Implemented', 'Use Basic Auth method!')
         
@@ -66,6 +66,17 @@ class User:
         user = next(filter(lambda x: x["username"] == username, users))
 
         return {"username": user["username"], "profile_picture":user["profile_picture"]}
+    
+    def __find_user(self, username): 
+        user = list(filter(lambda x: x["username"] == username, users))
+        return user[0] if len(user) > 0 else None
+
+    def __username_is_available(self, username):
+        user = self.__find_user(username)
+        return True if user == None else False
+
+    def __insert_user(self, username, password):
+        users.append({"username": username, "password":password})
 
     def on_get(self, req: Request, res: Response):
         if req.auth is None:
@@ -81,3 +92,24 @@ class User:
 
         res.status = HTTP_200
         res.body = json.dumps(user)
+
+    def on_post(self, req: Request, res: Response):
+        username = req.media.get("username")
+        password = req.media.get("password")
+        print(username, password)
+        if username == None or password == None:
+            res.status = HTTP_401
+            res.body = json.dumps({"error":True, "message": "One or more required params were not provided!"})
+            return
+        
+        username_is_available = self.__username_is_available(username)
+        print(username_is_available)
+        if username_is_available == False:
+            res.status = HTTP_409
+            res.body = json.dumps({"error":True, "message": "Username already in use!"})
+            return
+        
+        self.__insert_user(username, password)
+
+        res.status = HTTP_201
+        res.body = json.dumps({"success": True})
